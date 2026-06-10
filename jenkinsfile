@@ -44,17 +44,21 @@ pipeline {
             }
         }
         stage('Docker build') {
-            steps {
+    steps {
+        script {
+            withAWS(credentials: 'devops', region: 'us-east-1') {
                 sh """
-                aws sts get-caller-identity
+                    aws sts get-caller-identity
 
-                aws ecr get-login-password --region ${region} | \
-                docker login --username AWS --password-stdin ${account_id}.dkr.ecr.${region}.amazonaws.com
+                    aws ecr get-login-password --region ${region} | \
+                    docker login --username AWS --password-stdin ${account_id}.dkr.ecr.${region}.amazonaws.com
 
-                docker build -t ${account_id}.dkr.ecr.${region}.amazonaws.com/expense-backend:${appVersion} .
+                    docker build -t ${account_id}.dkr.ecr.${region}.amazonaws.com/expense-backend:${appVersion} .
 
-                docker push ${account_id}.dkr.ecr.${region}.amazonaws.com/expense-backend:${appVersion}
-            """
+                    docker push ${account_id}.dkr.ecr.${region}.amazonaws.com/expense-backend:${appVersion}
+                """
+            }
+        }
     }
 }
         // stage('Docker build'){
