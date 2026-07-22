@@ -45,6 +45,21 @@ pipeline {
                 """
             }
         }
+
+       stage('Test AWS Credentials') {
+          steps {
+               withCredentials([[
+               $class: 'AmazonWebServicesCredentialsBinding',
+               credentialsId: 'aws-creds'
+        ]]) {
+            sh '''
+                echo "Testing AWS Credentials..."
+                aws --version
+                aws sts get-caller-identity
+            '''
+        }
+    }
+} 
 //         stage('Docker build') {
 //     steps {
 //         script {
@@ -74,24 +89,24 @@ pipeline {
         //         """
         //     }
         // }
-           stage('Docker Build') {
-    steps {
-        withCredentials([[
-            $class: 'AmazonWebServicesCredentialsBinding',
-            credentialsId: 'aws-creds'
-        ]]) {
-            sh """
-                aws sts get-caller-identity
+//            stage('Docker Build') {
+//     steps {
+//         withCredentials([[
+//             $class: 'AmazonWebServicesCredentialsBinding',
+//             credentialsId: 'aws-creds'
+//         ]]) {
+//             sh """
+//                 aws sts get-caller-identity
 
-                aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${account_id}.dkr.ecr.${region}.amazonaws.com
+//                 aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${account_id}.dkr.ecr.${region}.amazonaws.com
 
-                docker build -t ${account_id}.dkr.ecr.${region}.amazonaws.com/expanse/backend:${appVersion} .
+//                 docker build -t ${account_id}.dkr.ecr.${region}.amazonaws.com/expanse/backend:${appVersion} .
 
-                docker push ${account_id}.dkr.ecr.${region}.amazonaws.com/expanse/backend:${appVersion}
-            """
-        }
-    }
-}
+//                 docker push ${account_id}.dkr.ecr.${region}.amazonaws.com/expanse/backend:${appVersion}
+//             """
+//         }
+//     }
+// }
         stage('Deploy'){
             steps{
                 sh """
